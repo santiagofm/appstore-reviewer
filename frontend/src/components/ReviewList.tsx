@@ -12,7 +12,6 @@ import {
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { getReviews, type Review } from "../api";
-import { useApps } from "../context/AppsContext";
 
 interface Props {
   appId: string;
@@ -36,7 +35,6 @@ function timeAgo(ms: number): string {
 }
 
 export default function ReviewList({ appId, appName }: Props) {
-  const { refresh } = useApps();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +47,6 @@ export default function ReviewList({ appId, appName }: Props) {
       try {
         const data = await getReviews(appId, rangeHours);
         setReviews(data);
-        // App is now registered in DB — refresh the watching sidebar
-        refresh();
       } catch (err) {
         setError(String(err));
       } finally {
@@ -59,7 +55,6 @@ export default function ReviewList({ appId, appName }: Props) {
     };
 
     fetchReviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId, rangeHours]);
 
   const selectedLabel =

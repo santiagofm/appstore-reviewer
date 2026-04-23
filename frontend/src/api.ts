@@ -40,6 +40,12 @@ export async function getReviews(appId: string, hours = 48): Promise<Review[]> {
   return res.json();
 }
 
+export async function addApp(appId: string): Promise<TrackedApp> {
+  const res = await fetch(`/api/apps/${appId}`, { method: "POST" });
+  if (!res.ok) throw new Error("Failed to add app");
+  return res.json();
+}
+
 export async function removeApp(appId: string): Promise<void> {
   const res = await fetch(`/api/apps/${appId}`, { method: "DELETE" });
   if (!res.ok) throw new Error("Failed to remove app");

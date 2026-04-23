@@ -5,9 +5,10 @@ import { searchApps, type AppResult } from "../api";
 
 interface Props {
   onAppSelected: (appId: string, name: string) => void;
+  disabled?: boolean;
 }
 
-export default function AppSearch({ onAppSelected }: Props) {
+export default function AppSearch({ onAppSelected, disabled }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [options, setOptions] = useState<
     { value: string; label: React.ReactNode; name: string }[]
@@ -18,7 +19,10 @@ export default function AppSearch({ onAppSelected }: Props) {
   const handleSearch = (term: string) => {
     setInputValue(term);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!term.trim()) { setOptions([]); return; }
+    if (!term.trim()) {
+      setOptions([]);
+      return;
+    }
 
     debounceRef.current = setTimeout(async () => {
       setLoading(true);
@@ -30,12 +34,18 @@ export default function AppSearch({ onAppSelected }: Props) {
             name: r.name,
             label: (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <img src={r.icon} alt="" width={24} height={24} style={{ borderRadius: 6 }} />
+                <img
+                  src={r.icon}
+                  alt=""
+                  width={24}
+                  height={24}
+                  style={{ borderRadius: 6 }}
+                />
                 <span>{r.name}</span>
                 <span style={{ color: "#999", fontSize: 12 }}>{r.seller}</span>
               </div>
             ),
-          }))
+          })),
         );
       } catch {
         setOptions([]);
@@ -45,7 +55,10 @@ export default function AppSearch({ onAppSelected }: Props) {
     }, 300);
   };
 
-  const handleSelect = (_appId: string, option: { value: string; name: string }) => {
+  const handleSelect = (
+    _appId: string,
+    option: { value: string; name: string },
+  ) => {
     onAppSelected(option.value, option.name);
     // Clear the input after selection so the app name isn't replaced by the ID
     setInputValue("");
@@ -65,8 +78,16 @@ export default function AppSearch({ onAppSelected }: Props) {
         placeholder="Search for an iOS app…"
         allowClear
         size="middle"
-        onClear={() => { setInputValue(""); setOptions([]); }}
-        suffix={loading ? <span style={{ fontSize: 12, color: "#999" }}>…</span> : null}
+        disabled={disabled}
+        onClear={() => {
+          setInputValue("");
+          setOptions([]);
+        }}
+        suffix={
+          loading || disabled ? (
+            <span style={{ fontSize: 12, color: "#999" }}>…</span>
+          ) : null
+        }
       />
     </AutoComplete>
   );

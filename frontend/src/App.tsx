@@ -4,14 +4,27 @@ import { AppstoreOutlined } from "@ant-design/icons";
 import AppSearch from "./components/AppSearch";
 import WatchingList from "./components/WatchingList";
 import ReviewList from "./components/ReviewList";
+import { addApp } from "./api";
+import { useApps } from "./context/AppsContext";
 
 const { Header, Sider, Content } = Layout;
 
 export default function App() {
+  const { refresh } = useApps();
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [selectedAppName, setSelectedAppName] = useState<string>("");
+  const [adding, setAdding] = useState(false);
 
-  const handleAppSelected = (appId: string, name: string) => {
+  const handleAppSelected = async (appId: string, name: string) => {
+    setAdding(true);
+    try {
+      await addApp(appId);
+      await refresh();
+    } catch {
+      // best-effort — still navigate to the app
+    } finally {
+      setAdding(false);
+    }
     setSelectedAppId(appId);
     setSelectedAppName(name);
   };
@@ -45,7 +58,7 @@ export default function App() {
           App Store Reviews
         </Typography.Title>
         <div style={{ flex: 1, maxWidth: 480 }}>
-          <AppSearch onAppSelected={handleAppSelected} />
+          <AppSearch onAppSelected={handleAppSelected} disabled={adding} />
         </div>
       </Header>
 
