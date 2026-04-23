@@ -23,6 +23,4 @@ export interface RssEntry {
   "im:rating": { label: string };
   author: { name: { label: string } };
   updated: { label: string };
-  // present only on first entry of page 1 (app metadata)
-  "im:name"?: { label: string };
 }

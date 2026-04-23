@@ -8,6 +8,10 @@ interface RssFeed {
   };
 }
 
+interface ItunesLookup {
+  results: Array<{ trackName: string }>;
+}
+
 export async function fetchRssPage(
   appId: string,
   page: number,
@@ -20,15 +24,15 @@ export async function fetchRssPage(
   return data.feed.entry ?? [];
 }
 
-export function parseReviews(
-  entries: RssEntry[],
-  appId: string,
-  isFirstPage: boolean,
-): Review[] {
-  // First entry on page 1 is app metadata, not a review — skip it
-  const reviewEntries = isFirstPage ? entries.slice(1) : entries;
+export async function fetchAppName(appId: string): Promise<string | null> {
+  const res = await fetch(`https://itunes.apple.com/lookup?id=${appId}`);
+  if (!res.ok) return null;
+  const data = (await res.json()) as ItunesLookup;
+  return data.results[0]?.trackName ?? null;
+}
 
-  return reviewEntries
+export function parseReviews(entries: RssEntry[], appId: string): Review[] {
+  return entries
     .filter((e) => e["im:rating"] !== undefined)
     .map((e) => ({
       app_id: appId,

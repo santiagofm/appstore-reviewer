@@ -6,6 +6,11 @@ const DB_PATH = path.join(__dirname, "../data.db");
 
 let _db: Database.Database | null = null;
 
+export function resetDb(): void {
+  _db?.close();
+  _db = null;
+}
+
 export function getDb(dbPath = DB_PATH): Database.Database {
   if (_db) return _db;
   _db = new Database(dbPath);
@@ -90,11 +95,4 @@ export function getReviewsSince(appId: string, hours: number): Review[] {
     `,
     )
     .all(appId, since) as Review[];
-}
-
-export function getLastPolled(appId: string): number | null {
-  const row = getDb()
-    .prepare(`SELECT last_polled_at FROM apps WHERE app_id = ?`)
-    .get(appId) as { last_polled_at: number | null } | undefined;
-  return row?.last_polled_at ?? null;
 }

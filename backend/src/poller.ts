@@ -1,13 +1,12 @@
 import {
   getApps,
-  getLastPolled,
   insertOrIgnoreApp,
   updateAppName,
   updateLastPolled,
   upsertReview,
   getDb,
 } from "./db";
-import { fetchRssPage, parseReviews } from "./rss";
+import { fetchAppName, fetchRssPage, parseReviews } from "./rss";
 
 const MAX_PAGES = 10;
 const POLL_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
@@ -16,8 +15,15 @@ const WINDOW_MS = 48 * 60 * 60 * 1000; // 48 hours
 export async function pollApp(appId: string): Promise<void> {
   insertOrIgnoreApp(appId);
 
+  // Backfill app name via iTunes lookup if not yet stored
+  const apps = getApps();
+  const app = apps.find((a) => a.app_id === appId);
+  if (!app?.name) {
+    const name = await fetchAppName(appId);
+    if (name) updateAppName(appId, name);
+  }
+
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const isFirstPage = page === 1;
     let entries;
 
     try {
@@ -32,12 +38,7 @@ export async function pollApp(appId: string): Promise<void> {
 
     if (entries.length === 0) break;
 
-    // Backfill app name from metadata entry on page 1
-    if (isFirstPage && entries[0]?.["im:name"]) {
-      updateAppName(appId, entries[0]["im:name"]!.label);
-    }
-
-    const reviews = parseReviews(entries, appId, isFirstPage);
+    const reviews = parseReviews(entries, appId);
     if (reviews.length === 0) break;
 
     const cutoff = Date.now() - WINDOW_MS;
