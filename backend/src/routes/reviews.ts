@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getApps, getReviewsSince, insertOrIgnoreApp } from "../db";
+import { getApps, getReviewsSince } from "../db";
 import { pollApp } from "../poller";
 
 const router = Router();
@@ -10,13 +10,12 @@ router.get("/:appId/reviews", async (req, res) => {
 
   const known = getApps().some((a) => a.app_id === appId);
   if (!known) {
-    insertOrIgnoreApp(appId);
     try {
       await pollApp(appId);
     } catch (err) {
-      return res
-        .status(502)
-        .json({ error: `Failed to fetch reviews: ${String(err)}` });
+      return res.status(502).json({
+        error: `Could not fetch reviews for app "${appId}". Make sure it's a valid App Store app ID.`,
+      });
     }
   }
 

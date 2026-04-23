@@ -84,6 +84,12 @@ export function getApps(): App[] {
     .all() as App[];
 }
 
+export function deleteApp(appId: string): void {
+  const db = getDb();
+  db.prepare(`DELETE FROM reviews WHERE app_id = ?`).run(appId);
+  db.prepare(`DELETE FROM apps WHERE app_id = ?`).run(appId);
+}
+
 export function getReviewsSince(appId: string, hours: number): Review[] {
   const since = Date.now() - hours * 60 * 60 * 1000;
   return getDb()

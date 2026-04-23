@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { getApps } from "../db";
-import { pollApp } from "../poller";
+import { getApps, deleteApp } from "../db";
 
 const router = Router();
 
@@ -8,14 +7,10 @@ router.get("/", (_req, res) => {
   res.json(getApps());
 });
 
-router.post("/:appId/poll", async (req, res) => {
+router.delete("/:appId", (req, res) => {
   const { appId } = req.params;
-  try {
-    await pollApp(appId);
-    res.json({ ok: true, appId });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: String(err) });
-  }
+  deleteApp(appId);
+  res.json({ ok: true, appId });
 });
 
 export default router;
