@@ -1,9 +1,7 @@
 import Database from "better-sqlite3";
 import path from "path";
-import { fileURLToPath } from "url";
-import type { App, Review } from "./types.js";
+import type { App, Review } from "./types";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = path.join(__dirname, "../data.db");
 
 let _db: Database.Database | null = null;

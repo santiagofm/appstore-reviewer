@@ -1,5 +1,5 @@
 import express from "express";
-import { getDb } from "./db.js";
+import { getDb } from "./db";
 
 const app = express();
 const PORT = 3001;
